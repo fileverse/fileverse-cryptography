@@ -1,0 +1,1 @@
+export { deriveHKDFKey } from "./core";

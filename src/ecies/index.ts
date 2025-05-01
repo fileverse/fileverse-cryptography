@@ -1,3 +1,10 @@
-export { encrypt, type EciesCiphertext } from "./encrypt";
-export { decrypt } from "./decrypt";
-export { generateKeyPair } from "./keys";
+export { generateECKeyPair, deriveSharedSecret } from "./keys";
+export { eciesEncrypt, eciesDecrypt, parseEciesCipherString } from "./core";
+export type {
+  EciesCipher,
+  EciesKeyPair,
+  EciesKeyPairBase64,
+  EciesKeyPairBytes,
+  CipherTextFormat,
+  EciesKeyPairType,
+} from "./types";
