@@ -2,7 +2,7 @@ import { describe, it, expect } from "vitest";
 import { eciesEncrypt, eciesDecrypt, parseEciesCipherString } from "../core";
 import { generateECKeyPair } from "../keys";
 import { SEPERATOR } from "../../constants";
-import { base64ToBytes, bytesToBase64 } from "../../utils";
+import { toBytes, bytesToBase64 } from "../../utils";
 import { EciesCipher } from "..";
 
 describe("ECIES Core Functionality", () => {
@@ -131,8 +131,8 @@ describe("ECIES Core Functionality", () => {
       const keyPair = generateECKeyPair();
       const emptyMessage = new Uint8Array(0);
 
-      const publicKey = keyPair.publicKey as string;
-      const privateKey = keyPair.privateKey as string;
+      const publicKey = keyPair.publicKey;
+      const privateKey = keyPair.privateKey;
 
       const encrypted = eciesEncrypt(publicKey, emptyMessage, "raw");
 
@@ -169,8 +169,8 @@ describe("ECIES Core Functionality", () => {
       ];
 
       const keyPair = generateECKeyPair();
-      const publicKey = keyPair.publicKey as string;
-      const privateKey = keyPair.privateKey as string;
+      const publicKey = keyPair.publicKey;
+      const privateKey = keyPair.privateKey;
 
       const emptyData = new Uint8Array(0);
       const encryptedEmpty = eciesEncrypt(publicKey, emptyData, "raw");
@@ -207,7 +207,7 @@ describe("ECIES Core Functionality", () => {
 
   describe("Edge Cases and Error Handling", () => {
     it("should throw an error when encrypting with an invalid public key", () => {
-      const invalidPublicKey = "not-a-valid-key";
+      const invalidPublicKey = toBytes("not-a-valid-key");
 
       expect(() => eciesEncrypt(invalidPublicKey, messageBytes)).toThrow();
     });
@@ -215,7 +215,7 @@ describe("ECIES Core Functionality", () => {
     it("should throw an error when decrypting with an invalid private key", () => {
       const keyPair = generateECKeyPair();
       const encrypted = eciesEncrypt(keyPair.publicKey, messageBytes);
-      const invalidPrivateKey = "not-a-valid-key";
+      const invalidPrivateKey = toBytes("not-a-valid-key");
 
       expect(() => eciesDecrypt(invalidPrivateKey, encrypted)).toThrow();
     });

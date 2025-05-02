@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { base64ToBytes, bytesToBase64, encodeData } from "../encoding-utils";
+import { toBytes, bytesToBase64, encodeData } from "../encoding-utils";
 
 describe("Encoding Utilities", () => {
   describe("encodeData", () => {
@@ -34,7 +34,7 @@ describe("Encoding Utilities", () => {
       const original = new TextEncoder().encode("Testing roundtrip conversion");
 
       const base64 = encodeData(original, "base64");
-      const backToBytes = base64ToBytes(base64 as string);
+      const backToBytes = toBytes(base64 as string);
 
       expect(backToBytes.length).toBe(original.length);
 

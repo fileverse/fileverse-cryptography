@@ -5,6 +5,7 @@ A comprehensive, type-safe cryptographic library for JavaScript/TypeScript appli
 ## Features
 
 - **ECIES** (Elliptic Curve Integrated Encryption Scheme) for asymmetric encryption
+- **RSA** encryption with envelope encryption support for large messages
 - **HKDF** (HMAC-based Key Derivation Function) for secure key derivation
 - **Encoding Utilities** for consistent data format handling
 - **Type-Safe API** with TypeScript generics for encoding types
@@ -13,7 +14,7 @@ A comprehensive, type-safe cryptographic library for JavaScript/TypeScript appli
 ## Installation
 
 ```bash
-npm install fileverse-crypto
+npm install @fileverse/crypto
 ```
 
 ## Usage
@@ -27,14 +28,14 @@ import {
   generateECKeyPair,
   eciesEncrypt,
   eciesDecrypt,
-} from "fileverse-crypto/ecies";
+} from "@fileverse/crypto/ecies";
 
 // Generate a key pair
 const keyPair = generateECKeyPair();
 // { publicKey: "base64-encoded-string", privateKey: "base64-encoded-string" }
 
 // Or generate with bytes encoding
-const bytesKeyPair = generateECKeyPair("bytes");
+const keyPairBytes = generateECKeyPair("bytes");
 // { publicKey: Uint8Array, privateKey: Uint8Array }
 
 // Encrypt a message
@@ -53,7 +54,7 @@ const encryptedRaw = eciesEncrypt(keyPair.publicKey, message, "raw");
 #### Shared Secret Derivation
 
 ```typescript
-import { generateECKeyPair, deriveSharedSecret } from "fileverse-crypto/ecies";
+import { generateECKeyPair, deriveSharedSecret } from "@fileverse/crypto/ecies";
 
 const aliceKeyPair = generateECKeyPair();
 const bobKeyPair = generateECKeyPair();
@@ -73,12 +74,53 @@ const bobSharedSecret = deriveSharedSecret(
 // aliceSharedSecret === bobSharedSecret
 ```
 
+### RSA
+
+RSA encryption with support for envelope encryption to handle messages of any size.
+
+```typescript
+import {
+  generateRSAKeyPair,
+  rsaEncrypt,
+  rsaDecrypt,
+  rsaEncryptEnvelope,
+  rsaDecryptEnvelope,
+} from "@fileverse/crypto/rsa";
+import { toBytes } from "@fileverse/crypto/utils";
+
+// Generate an RSA key pair (default 4096 bits)
+const keyPair = await generateRSAKeyPair();
+// { publicKey: "base64-encoded-string", privateKey: "base64-encoded-string" }
+
+// Or generate with bytes encoding
+const keyPairBytes = await generateRSAKeyPair(4096, "bytes");
+// { publicKey: Uint8Array, privateKey: Uint8Array }
+
+// Standard RSA encryption (for small messages)
+const message = new TextEncoder().encode("Hello, RSA encryption!");
+const encrypted = await rsaEncrypt(keyPairBytes.publicKey, message);
+
+// Decrypt
+const decrypted = await rsaDecrypt(keyPairBytes.privateKey, toBytes(encrypted));
+console.log(new TextDecoder().decode(decrypted)); // "Hello, RSA encryption!"
+
+// For larger messages, use envelope encryption (hybrid RSA/AES)
+const largeMessage = new Uint8Array(1024 * 500); // 500KB message
+const envelope = await rsaEncryptEnvelope(keyPairBytes.publicKey, largeMessage);
+
+// Decrypt envelope
+const decryptedLarge = await rsaDecryptEnvelope(
+  keyPairBytes.privateKey,
+  envelope
+);
+```
+
 ### HKDF
 
 HMAC-based Key Derivation Function for deriving secure cryptographic keys.
 
 ```typescript
-import { deriveHKDFKey } from "fileverse-crypto/hkdf";
+import { deriveHKDFKey } from "@fileverse/crypto/hkdf";
 
 // Derive a key
 const keyMaterial = "some-secure-key-material";
@@ -97,14 +139,10 @@ const keyBase64 = deriveHKDFKey(keyMaterial, salt, info, "base64");
 Utilities for handling encoding conversions consistently.
 
 ```typescript
-import {
-  base64ToBytes,
-  bytesToBase64,
-  encodeData,
-} from "fileverse-crypto/utils";
+import { toBytes, bytesToBase64, encodeData } from "@fileverse/crypto/utils";
 
 // Convert base64 to Uint8Array
-const bytes = base64ToBytes("SGVsbG8gV29ybGQ=");
+const bytes = toBytes("SGVsbG8gV29ybGQ=");
 
 // Convert Uint8Array to base64
 const base64 = bytesToBase64(new TextEncoder().encode("Hello World"));
@@ -156,6 +194,54 @@ Decrypts data using ECIES.
   - `encryptedData`: The encrypted data (string or EciesCipher object).
 - **Returns:** The decrypted data as a Uint8Array.
 
+### RSA Module
+
+#### `generateRSAKeyPair<E extends EncodingType = "base64">(keySize?: number, encoding?: E): Promise<RsaKeyPairType<E>>`
+
+Generates an RSA key pair with the specified key size and encoding.
+
+- **Parameters:**
+  - `keySize`: Optional. The key size in bits. Default: 4096.
+  - `encoding`: Optional. The encoding type to use ("base64" or "bytes"). Default: "base64".
+- **Returns:** A promise resolving to an object containing `publicKey` and `privateKey` in the specified encoding.
+
+#### `rsaEncrypt<E extends "base64" | "bytes" = "base64">(publicKey: Uint8Array, message: Uint8Array, returnFormat?: E): Promise<E extends "base64" ? string : Uint8Array>`
+
+Encrypts data using RSA-OAEP.
+
+- **Parameters:**
+  - `publicKey`: The public key as a Uint8Array.
+  - `message`: The data to encrypt.
+  - `returnFormat`: Optional. The format of the result ("base64" or "bytes"). Default: "base64".
+- **Returns:** A promise resolving to the encrypted data in the specified format.
+
+#### `rsaDecrypt(privateKey: Uint8Array, cipherTextWithNonce: Uint8Array): Promise<Uint8Array>`
+
+Decrypts data using RSA-OAEP.
+
+- **Parameters:**
+  - `privateKey`: The private key as a Uint8Array.
+  - `cipherTextWithNonce`: The encrypted data with nonce.
+- **Returns:** A promise resolving to the decrypted data as a Uint8Array.
+
+#### `rsaEncryptEnvelope(publicKey: Uint8Array, message: Uint8Array): Promise<string>`
+
+Encrypts a message of any size using envelope encryption (hybrid RSA/AES).
+
+- **Parameters:**
+  - `publicKey`: The public key as a Uint8Array.
+  - `message`: The data to encrypt.
+- **Returns:** A promise resolving to the enveloped ciphertext as a string.
+
+#### `rsaDecryptEnvelope(privateKey: Uint8Array, envelopedCipher: string): Promise<Uint8Array>`
+
+Decrypts an envelope-encrypted message.
+
+- **Parameters:**
+  - `privateKey`: The private key as a Uint8Array.
+  - `envelopedCipher`: The enveloped ciphertext.
+- **Returns:** A promise resolving to the decrypted data as a Uint8Array.
+
 ### HKDF Module
 
 #### `deriveHKDFKey<E extends EncodingType = "bytes">(keyMaterial: string, salt: Uint8Array, info: Uint8Array, encoding?: E): EncodedReturnType<E>`
@@ -171,7 +257,7 @@ Derives a key using HKDF.
 
 ### Encoding Utilities
 
-#### `base64ToBytes(base64: string): Uint8Array`
+#### `toBytes(base64: string): Uint8Array`
 
 Converts a base64 string to a Uint8Array.
 
@@ -220,8 +306,8 @@ This library leverages the following dependencies for cryptographic operations:
 
 ```bash
 # Clone the repository
-git clone https://github.com/fileverse/fileverse-crypto.git
-cd fileverse-crypto
+git clone https://github.com/fileverse/crypto.git
+cd crypto
 
 # Install dependencies
 npm install

@@ -1,10 +1,10 @@
 import { describe, it, expect } from "vitest";
 import { deriveHKDFKey } from "../core";
 import { HKDF_KEY_LENGTH } from "../../constants";
-import { base64ToBytes, bytesToBase64 } from "../../utils/encoding-utils";
+import { toBytes, bytesToBase64 } from "../../utils/encoding-utils";
 
 describe("HKDF Core Functionality", () => {
-  const keyMaterial = "test-key-material";
+  const keyMaterial = toBytes("test-key-material");
   const salt = new TextEncoder().encode("test-salt");
   const info = new TextEncoder().encode("test-info");
 
@@ -22,7 +22,7 @@ describe("HKDF Core Functionality", () => {
       expect(typeof derivedKey).toBe("string");
 
       // Verify we can decode it back to the correct length
-      const keyBytes = base64ToBytes(derivedKey);
+      const keyBytes = toBytes(derivedKey);
       expect(keyBytes.length).toBe(HKDF_KEY_LENGTH);
     });
 
@@ -39,7 +39,7 @@ describe("HKDF Core Functionality", () => {
 
     it("should produce different keys for different key materials", () => {
       const key1 = deriveHKDFKey(keyMaterial, salt, info);
-      const key2 = deriveHKDFKey("different-key-material", salt, info);
+      const key2 = deriveHKDFKey(toBytes("different-key-material"), salt, info);
 
       let hasDifference = false;
       for (let i = 0; i < key1.length; i++) {
@@ -101,7 +101,7 @@ describe("HKDF Core Functionality", () => {
     });
 
     it("should handle empty key material", () => {
-      const emptyKeyMaterial = "";
+      const emptyKeyMaterial = toBytes("");
       const key = deriveHKDFKey(emptyKeyMaterial, salt, info);
 
       expect(key instanceof Uint8Array).toBe(true);
@@ -133,8 +133,8 @@ describe("HKDF Core Functionality", () => {
 
       // We're using HKDF_KEY_LENGTH which might differ from the RFC's test vector length
       // So we're testing determinism instead
-      const key1 = deriveHKDFKey(bytesToBase64(ikm), salt, info);
-      const key2 = deriveHKDFKey(bytesToBase64(ikm), salt, info);
+      const key1 = deriveHKDFKey(ikm, salt, info);
+      const key2 = deriveHKDFKey(ikm, salt, info);
 
       // Test keys are identical
       expect(key1.length).toBe(key2.length);
@@ -146,7 +146,7 @@ describe("HKDF Core Functionality", () => {
       const differentIkm = new TextEncoder().encode(
         "0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c0c"
       );
-      const key3 = deriveHKDFKey(bytesToBase64(differentIkm), salt, info);
+      const key3 = deriveHKDFKey(differentIkm, salt, info);
 
       let hasDifference = false;
       for (let i = 0; i < key1.length; i++) {

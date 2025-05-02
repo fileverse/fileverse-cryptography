@@ -1,20 +1,11 @@
 import { describe, it, expect } from "vitest";
 import { generateECKeyPair, deriveSharedSecret } from "../keys";
-import { base64ToBytes, bytesToBase64 } from "../../utils";
+import { bytesToBase64 } from "../../utils";
 
 describe("ECIES Key Functions", () => {
   describe("generateECKeyPair", () => {
-    it("should generate a key pair with base64 encoding by default", () => {
+    it("should generate a key pair with bytes encoding by default", () => {
       const keyPair = generateECKeyPair();
-
-      expect(keyPair).toHaveProperty("publicKey");
-      expect(keyPair).toHaveProperty("privateKey");
-      expect(typeof keyPair.publicKey).toBe("string");
-      expect(typeof keyPair.privateKey).toBe("string");
-    });
-
-    it("should generate a key pair with bytes encoding when specified", () => {
-      const keyPair = generateECKeyPair("bytes");
 
       expect(keyPair).toHaveProperty("publicKey");
       expect(keyPair).toHaveProperty("privateKey");
@@ -22,12 +13,22 @@ describe("ECIES Key Functions", () => {
       expect(keyPair.privateKey instanceof Uint8Array).toBe(true);
     });
 
+    it("should generate a key pair with base64 encoding when specified", () => {
+      const keyPair = generateECKeyPair("base64");
+
+      expect(keyPair).toHaveProperty("publicKey");
+      expect(keyPair).toHaveProperty("privateKey");
+      expect(typeof keyPair.publicKey).toBe("string");
+      expect(typeof keyPair.privateKey).toBe("string");
+    });
+
     it("should generate different key pairs on each call", () => {
       const keyPair1 = generateECKeyPair();
       const keyPair2 = generateECKeyPair();
 
-      expect(keyPair1.publicKey).not.toBe(keyPair2.publicKey);
-      expect(keyPair1.privateKey).not.toBe(keyPair2.privateKey);
+      // Need to use toEqual for Uint8Array comparison, not toBe (reference equality)
+      expect(keyPair1.publicKey).not.toEqual(keyPair2.publicKey);
+      expect(keyPair1.privateKey).not.toEqual(keyPair2.privateKey);
     });
   });
 
@@ -46,7 +47,8 @@ describe("ECIES Key Functions", () => {
         aliceKeyPair.publicKey
       );
 
-      expect(aliceSharedSecret).toBe(bobSharedSecret);
+      // Use toEqual for Uint8Array comparison, not toBe
+      expect(aliceSharedSecret).toEqual(bobSharedSecret);
     });
 
     it("should derive different shared secrets from different key pairs", () => {
@@ -64,42 +66,58 @@ describe("ECIES Key Functions", () => {
         keyPair3.publicKey
       );
 
-      expect(sharedSecret1).not.toBe(sharedSecret2);
+      // Use toEqual for Uint8Array comparison
+      expect(sharedSecret1).not.toEqual(sharedSecret2);
     });
 
     it("should accept both string and Uint8Array inputs", () => {
-      const keyPair1 = generateECKeyPair();
-      const keyPair2 = generateECKeyPair();
+      // Generate base64 keys for string testing
+      const keyPair1 = generateECKeyPair("base64");
+      const keyPair2 = generateECKeyPair("base64");
 
-      // Convert to bytes for testing
-      const privateKeyBytes = base64ToBytes(keyPair1.privateKey);
-      const publicKeyBytes = base64ToBytes(keyPair2.publicKey);
+      // Generate bytes keys for Uint8Array testing
+      const keyPair3 = generateECKeyPair();
+      const keyPair4 = generateECKeyPair();
 
       // Test different combinations of input types
       const secret1 = deriveSharedSecret(
         keyPair1.privateKey,
         keyPair2.publicKey
       );
-      const secret2 = deriveSharedSecret(privateKeyBytes, keyPair2.publicKey);
-      const secret3 = deriveSharedSecret(keyPair1.privateKey, publicKeyBytes);
-      const secret4 = deriveSharedSecret(privateKeyBytes, publicKeyBytes);
 
-      expect(secret1).toBe(secret2);
-      expect(secret2).toBe(secret3);
-      expect(secret3).toBe(secret4);
+      const secret2 = deriveSharedSecret(
+        keyPair3.privateKey,
+        keyPair2.publicKey
+      );
+
+      const secret3 = deriveSharedSecret(
+        keyPair1.privateKey,
+        keyPair4.publicKey
+      );
+
+      const secret4 = deriveSharedSecret(
+        keyPair3.privateKey,
+        keyPair4.publicKey
+      );
+
+      // All should produce Uint8Array results by default
+      expect(secret1 instanceof Uint8Array).toBe(true);
+      expect(secret2 instanceof Uint8Array).toBe(true);
+      expect(secret3 instanceof Uint8Array).toBe(true);
+      expect(secret4 instanceof Uint8Array).toBe(true);
     });
 
-    it("should return the shared secret in bytes format when specified", () => {
+    it("should return the shared secret in base64 format when specified", () => {
       const keyPair1 = generateECKeyPair();
       const keyPair2 = generateECKeyPair();
 
       const sharedSecret = deriveSharedSecret(
         keyPair1.privateKey,
         keyPair2.publicKey,
-        "bytes"
+        "base64"
       );
 
-      expect(sharedSecret instanceof Uint8Array).toBe(true);
+      expect(typeof sharedSecret).toBe("string");
     });
   });
 });

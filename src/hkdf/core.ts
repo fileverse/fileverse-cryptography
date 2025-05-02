@@ -5,7 +5,7 @@ import { encodeData } from "../utils/encoding-utils";
 import { sha256 } from "@noble/hashes/sha2";
 
 export const deriveHKDFKey = <E extends EncodingType = "bytes">(
-  keyMaterial: string,
+  keyMaterial: Uint8Array,
   salt: Uint8Array,
   info: Uint8Array,
   encoding?: E

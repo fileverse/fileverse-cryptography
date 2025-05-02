@@ -1,26 +1,21 @@
 import { gcm } from "@noble/ciphers/aes";
 import { randomBytes } from "@noble/hashes/utils";
 import { NONCE_LEN, INFO, CURVE } from "./config";
-import { base64ToBytes, bytesToBase64 } from "../utils";
+import { toBytes, bytesToBase64 } from "../utils";
 import { EciesCipher } from ".";
 import { deriveSharedSecret } from "./keys";
 import { SEPERATOR } from "../constants";
 import { CipherTextFormat } from "./types";
 import { deriveHKDFKey } from "../hkdf";
 export const eciesEncrypt = <T extends CipherTextFormat = "base64">(
-  publicKeyB64: string,
+  publicKey: Uint8Array,
   message: Uint8Array,
   returnFormat?: T
 ): T extends "raw" ? EciesCipher : string => {
-  const recipientPublicKey = base64ToBytes(publicKeyB64);
-
   const ephemeralPrivateKey = CURVE.utils.randomPrivateKey();
   const ephemeralPublicKeyBytes = CURVE.getPublicKey(ephemeralPrivateKey);
 
-  const sharedSecret = deriveSharedSecret(
-    ephemeralPrivateKey,
-    recipientPublicKey
-  );
+  const sharedSecret = deriveSharedSecret(ephemeralPrivateKey, publicKey);
 
   const derivedKey = deriveHKDFKey(sharedSecret, ephemeralPublicKeyBytes, INFO);
 
@@ -79,11 +74,9 @@ export const parseEciesCipherString = (
 };
 
 export const eciesDecrypt = <T extends EciesCipher | string>(
-  privateKeyB64: string,
+  privateKey: Uint8Array,
   encryptedData: T
 ): Uint8Array => {
-  const recipientPrivateKey = base64ToBytes(privateKeyB64);
-
   let structuredData: EciesCipher;
 
   if (typeof encryptedData === "string") {
@@ -92,15 +85,12 @@ export const eciesDecrypt = <T extends EciesCipher | string>(
     structuredData = encryptedData;
   }
 
-  const ephemeralPublicKey = base64ToBytes(structuredData.ephemeralPublicKey);
-  const nonce = base64ToBytes(structuredData.nonce);
-  const ciphertext = base64ToBytes(structuredData.ciphertext);
-  const mac = base64ToBytes(structuredData.mac);
+  const ephemeralPublicKey = toBytes(structuredData.ephemeralPublicKey);
+  const nonce = toBytes(structuredData.nonce);
+  const ciphertext = toBytes(structuredData.ciphertext);
+  const mac = toBytes(structuredData.mac);
 
-  const sharedSecret = deriveSharedSecret(
-    recipientPrivateKey,
-    ephemeralPublicKey
-  );
+  const sharedSecret = deriveSharedSecret(privateKey, ephemeralPublicKey);
 
   const derivedKey = deriveHKDFKey(sharedSecret, ephemeralPublicKey, INFO);
 

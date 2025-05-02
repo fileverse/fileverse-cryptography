@@ -2,28 +2,92 @@ import { resolve } from "path";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
 
+// Check if we're in production mode
+const isProd = process.env.NODE_ENV === "production";
+
 // https://vitejs.dev/guide/build.html#library-mode
 export default defineConfig({
   build: {
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
-      name: "FileverseCrypto", // Change this to your library's name (used for UMD builds)
-      fileName: (format) => `index.${format}.js`, // Output file names based on format
-      formats: ["es", "cjs", "umd"], // Generate ES, CJS, and UMD formats
+      entry: {
+        "ecies/index": resolve(__dirname, "src/ecies/index.ts"),
+        "rsa/index": resolve(__dirname, "src/rsa/index.ts"),
+        "hkdf/index": resolve(__dirname, "src/hkdf/index.ts"),
+        "utils/index": resolve(__dirname, "src/utils/index.ts"),
+      },
+      name: "@fileverse/crypto",
+      formats: ["es", "cjs"],
     },
-    sourcemap: true,
-    // Optimize for production, consider externalizing peer dependencies if any
-    // rollupOptions: {
-    //   external: [], // e.g., ['react', 'react-dom']
-    //   output: {
-    //     globals: {} // e.g., { react: 'React', 'react-dom': 'ReactDOM' }
-    //   }
-    // }
+
+    minify: isProd ? "terser" : false,
+    terserOptions: isProd
+      ? {
+          compress: {
+            drop_console: true,
+            drop_debugger: true,
+            pure_funcs: ["console.log", "console.info", "console.debug"],
+            passes: 2,
+          },
+          mangle: {
+            properties: false,
+          },
+          format: {
+            comments: false,
+          },
+        }
+      : undefined,
+    sourcemap: !isProd,
+    outDir: "dist",
+    chunkSizeWarningLimit: 100,
+    rollupOptions: {
+      external: [
+        "crypto",
+        "path",
+        "fs",
+        "os",
+        "util",
+        "@noble/ciphers",
+        "@noble/curves",
+        "@noble/hashes",
+        "js-base64",
+        /^@noble\/ciphers\/.*/,
+        /^@noble\/curves\/.*/,
+        /^@noble\/hashes\/.*/,
+      ],
+      output: [
+        {
+          format: "es",
+          dir: "dist",
+          preserveModules: true,
+          preserveModulesRoot: "src",
+          entryFileNames: "[name].js",
+          compact: true,
+          sourcemap: !isProd,
+        },
+        {
+          format: "cjs",
+          dir: "dist",
+          preserveModules: true,
+          preserveModulesRoot: "src",
+          entryFileNames: "[name].cjs",
+          compact: true,
+          sourcemap: !isProd,
+        },
+      ],
+
+      treeshake: {
+        moduleSideEffects: false,
+        annotations: true,
+        tryCatchDeoptimization: false,
+        propertyReadSideEffects: false,
+      },
+    },
   },
   plugins: [
     dts({
-      // Generate declaration files
-      insertTypesEntry: true, // Create a single index.d.ts entry file
+      outDir: "dist",
+      include: ["src/**/*.ts"],
+      exclude: ["src/**/*.test.ts", "src/**/__tests__/**"],
     }),
   ],
 });
