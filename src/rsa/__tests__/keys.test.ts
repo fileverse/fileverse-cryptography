@@ -1,6 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { generateRSAKeyPair, toRSAKey, DEFAULT_RSA_KEY_SIZE } from "../keys";
 import { toBytes } from "../../utils/encoding-utils";
+import { webcrypto } from "crypto";
 
 describe("RSA Key Management", () => {
   // Use smaller key size for faster tests
@@ -136,14 +137,14 @@ describe("RSA Key Management", () => {
       const testData = new TextEncoder().encode("test data");
 
       // Encrypt with public key
-      const encryptedData = await crypto.subtle.encrypt(
+      const encryptedData = await webcrypto.subtle.encrypt(
         { name: "RSA-OAEP" },
         publicKey,
         testData
       );
 
       // Decrypt with private key
-      const decryptedData = await crypto.subtle.decrypt(
+      const decryptedData = await webcrypto.subtle.decrypt(
         { name: "RSA-OAEP" },
         privateKey,
         encryptedData
