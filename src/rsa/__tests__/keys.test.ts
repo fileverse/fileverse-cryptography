@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { generateRSAKeyPair, toRSAKey, DEFAULT_RSA_KEY_SIZE } from "../keys";
-import { toBytes } from "../../utils/encoding-utils";
+import { toBytes } from "../../utils/encoding";
 import { webcrypto } from "crypto";
 
 describe("RSA Key Management", () => {

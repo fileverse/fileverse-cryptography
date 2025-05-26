@@ -1,5 +1,5 @@
 import { randomBytes, webcrypto } from "crypto";
-import { encodeData } from "../utils/encoding-utils";
+import { encodeData } from "../utils/encoding";
 import { DEFAULT_NONCE_LENGTH } from "./config";
 import { concatBytes } from "@noble/hashes/utils";
 

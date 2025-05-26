@@ -1,6 +1,6 @@
 import { webcrypto } from "crypto";
 import { EncodingType } from "../types";
-import { bytesToBase64, encodeData } from "../utils/encoding-utils";
+import { bytesToBase64, encodeData } from "../utils/encoding";
 import { RsaKeyPairType } from "./types";
 export const DEFAULT_RSA_KEY_SIZE = 4096;
 

@@ -12,7 +12,7 @@ export default defineConfig({
       entry: {
         "ecies/index": resolve(__dirname, "src/ecies/index.ts"),
         "rsa/index": resolve(__dirname, "src/rsa/index.ts"),
-        "hkdf/index": resolve(__dirname, "src/hkdf/index.ts"),
+        "kdf/index": resolve(__dirname, "src/kdf/index.ts"),
         "utils/index": resolve(__dirname, "src/utils/index.ts"),
       },
       name: "@fileverse/crypto",

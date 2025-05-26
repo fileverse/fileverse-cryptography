@@ -1,2 +1,2 @@
 export const SEPERATOR = "__n__";
-export const HKDF_KEY_LENGTH = 32;
+export const DEFAULT_KEY_LENGTH = 32;

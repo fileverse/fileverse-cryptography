@@ -14,10 +14,10 @@
       "import": "./dist/rsa/index.js",
       "require": "./dist/rsa/index.cjs"
     },
-    "./hkdf": {
-      "types": "./dist/hkdf/index.d.ts",
-      "import": "./dist/hkdf/index.js",
-      "require": "./dist/hkdf/index.cjs"
+    "./kdf": {
+      "types": "./dist/kdf/index.d.ts",
+      "import": "./dist/kdf/index.js",
+      "require": "./dist/kdf/index.cjs"
     },
     "./utils": {
       "types": "./dist/utils/index.d.ts",

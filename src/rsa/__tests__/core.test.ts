@@ -6,7 +6,7 @@ import {
   rsaDecryptEnvelope,
 } from "../core";
 import { generateRSAKeyPair } from "../keys";
-import { toBytes } from "../../utils/encoding-utils";
+import { toBytes } from "../../utils/encoding";
 import { SEPERATOR } from "../../constants";
 
 describe("RSA Core Functionality", () => {

@@ -1,4 +1,4 @@
-import { encodeData, toBytes } from "../utils/encoding-utils";
+import { encodeData, toBytes } from "../utils/encoding";
 import { CURVE } from "./config";
 import type { EncodingType, EncodedReturnType } from "../types";
 import type { EciesKeyPairType } from "./types";

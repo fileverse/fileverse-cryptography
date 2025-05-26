@@ -6,7 +6,7 @@ import {
   aesDecrypt,
   toAESKey,
 } from "../envelope-helpers";
-import { toBytes } from "../../utils/encoding-utils";
+import { toBytes } from "../../utils/encoding";
 
 describe("RSA Envelope Helpers", () => {
   describe("AES Key Management", () => {

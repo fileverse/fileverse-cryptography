@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { toBytes, bytesToBase64, encodeData } from "../encoding-utils";
+import { toBytes, bytesToBase64, encodeData } from "../encoding";
 
 describe("Encoding Utilities", () => {
   describe("encodeData", () => {

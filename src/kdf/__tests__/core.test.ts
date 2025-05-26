@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { deriveHKDFKey } from "../core";
-import { HKDF_KEY_LENGTH } from "../../constants";
-import { toBytes, bytesToBase64 } from "../../utils/encoding-utils";
+import { DEFAULT_KEY_LENGTH } from "../../constants";
+import { toBytes, bytesToBase64 } from "../../utils/encoding";
 
 describe("HKDF Core Functionality", () => {
   const keyMaterial = toBytes("test-key-material");
@@ -13,7 +13,7 @@ describe("HKDF Core Functionality", () => {
       const derivedKey = deriveHKDFKey(keyMaterial, salt, info);
 
       expect(derivedKey instanceof Uint8Array).toBe(true);
-      expect(derivedKey.length).toBe(HKDF_KEY_LENGTH);
+      expect(derivedKey.length).toBe(DEFAULT_KEY_LENGTH);
     });
 
     it("should derive a key with base64 encoding when specified", () => {
@@ -23,7 +23,7 @@ describe("HKDF Core Functionality", () => {
 
       // Verify we can decode it back to the correct length
       const keyBytes = toBytes(derivedKey);
-      expect(keyBytes.length).toBe(HKDF_KEY_LENGTH);
+      expect(keyBytes.length).toBe(DEFAULT_KEY_LENGTH);
     });
 
     it("should be deterministic (same inputs produce same key)", () => {
@@ -89,7 +89,7 @@ describe("HKDF Core Functionality", () => {
       const key = deriveHKDFKey(keyMaterial, emptySalt, info);
 
       expect(key instanceof Uint8Array).toBe(true);
-      expect(key.length).toBe(HKDF_KEY_LENGTH);
+      expect(key.length).toBe(DEFAULT_KEY_LENGTH);
     });
 
     it("should handle empty info", () => {
@@ -97,7 +97,7 @@ describe("HKDF Core Functionality", () => {
       const key = deriveHKDFKey(keyMaterial, salt, emptyInfo);
 
       expect(key instanceof Uint8Array).toBe(true);
-      expect(key.length).toBe(HKDF_KEY_LENGTH);
+      expect(key.length).toBe(DEFAULT_KEY_LENGTH);
     });
 
     it("should handle empty key material", () => {
@@ -105,7 +105,7 @@ describe("HKDF Core Functionality", () => {
       const key = deriveHKDFKey(emptyKeyMaterial, salt, info);
 
       expect(key instanceof Uint8Array).toBe(true);
-      expect(key.length).toBe(HKDF_KEY_LENGTH);
+      expect(key.length).toBe(DEFAULT_KEY_LENGTH);
 
       // Empty key material should still produce a valid key
       // but different from our standard key
@@ -131,7 +131,7 @@ describe("HKDF Core Functionality", () => {
       const salt = new TextEncoder().encode("000102030405060708090a0b0c");
       const info = new TextEncoder().encode("f0f1f2f3f4f5f6f7f8f9");
 
-      // We're using HKDF_KEY_LENGTH which might differ from the RFC's test vector length
+      // We're using DEFAULT_KEY_LENGTH which might differ from the RFC's test vector length
       // So we're testing determinism instead
       const key1 = deriveHKDFKey(ikm, salt, info);
       const key2 = deriveHKDFKey(ikm, salt, info);

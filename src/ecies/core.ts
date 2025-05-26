@@ -1,12 +1,12 @@
 import { gcm } from "@noble/ciphers/aes";
-import { randomBytes } from "@noble/hashes/utils";
 import { NONCE_LEN, INFO, CURVE } from "./config";
-import { toBytes, bytesToBase64 } from "../utils";
+import { toBytes, bytesToBase64, generateRandomBytes } from "../utils";
 import { EciesCipher } from ".";
 import { deriveSharedSecret } from "./keys";
 import { SEPERATOR } from "../constants";
 import { CipherTextFormat } from "./types";
-import { deriveHKDFKey } from "../hkdf";
+import { deriveHKDFKey } from "../kdf";
+
 export const eciesEncrypt = <T extends CipherTextFormat = "base64">(
   publicKey: Uint8Array,
   message: Uint8Array,
@@ -19,7 +19,7 @@ export const eciesEncrypt = <T extends CipherTextFormat = "base64">(
 
   const derivedKey = deriveHKDFKey(sharedSecret, ephemeralPublicKeyBytes, INFO);
 
-  const nonce = randomBytes(NONCE_LEN);
+  const nonce = generateRandomBytes(NONCE_LEN);
   const aesGcm = gcm(derivedKey, nonce);
   const ciphertext = aesGcm.encrypt(message);
 
