@@ -1,6 +1,6 @@
 # Fileverse Crypto
 
-A comprehensive, type-safe cryptographic library for JavaScript/TypeScript applications. This library provides a set of easy-to-use cryptographic primitives with a focus on security, type safety, and flexibility.
+Fileverse is a privacy-first and decentralized workspace with note-taking, collaboration and spreadsheet apps. This repo contains a comprehensive, type-safe cryptographic library for the end-to-end encrypted Fileverse applications, including [dsheets.new](https://sheets.fileverse.io) and [ddocs.new](https://docs.fileverse.io). The library provides a set of easy-to-use cryptographic primitives with a focus on security, type safety, and flexibility, which can be used for any JavaScript/TypeScript applications.
 
 ## Features
 
@@ -32,11 +32,11 @@ import {
 
 // Generate a key pair
 const keyPair = generateECKeyPair();
-// { publicKey: "base64-encoded-string", privateKey: "base64-encoded-string" }
+// { publicKey: "Uint8Array", privateKey: "Uint8Array" }
 
-// Or generate with bytes encoding
-const keyPairBytes = generateECKeyPair("bytes");
-// { publicKey: Uint8Array, privateKey: Uint8Array }
+// Or generate with base64 encoding
+const keyPairB64 = generateECKeyPair("base64");
+// { publicKey: string, privateKey: string }
 
 // Encrypt a message
 const message = new TextEncoder().encode("Secret message");
@@ -123,7 +123,7 @@ HMAC-based Key Derivation Function for deriving secure cryptographic keys.
 import { deriveHKDFKey } from "@fileverse/crypto/hkdf";
 
 // Derive a key
-const keyMaterial = "some-secure-key-material";
+const keyMaterial = new TextEncoder().encode("some-secure-key-material");
 const salt = new TextEncoder().encode("salt-value");
 const info = new TextEncoder().encode("context-info");
 
@@ -157,22 +157,22 @@ const base64Result = encodeData(data, "base64"); // Returns string
 
 ### ECIES Module
 
-#### `generateECKeyPair<E extends EncodingType = "base64">(encoding?: E): EciesKeyPairType<E>`
+#### `generateECKeyPair<E extends EncodingType = "bytes">(encoding?: E): EciesKeyPairType<E>`
 
 Generates an ECIES key pair with the specified encoding.
 
 - **Parameters:**
-  - `encoding`: Optional. The encoding type to use ("base64" or "bytes"). Default: "base64".
+  - `encoding`: Optional. The encoding type to use ("base64" or "bytes"). Default: "bytes".
 - **Returns:** An object containing `publicKey` and `privateKey` in the specified encoding.
 
-#### `deriveSharedSecret<E extends EncodingType = "base64">(privateKey: Uint8Array | string, publicKey: Uint8Array | string, encoding?: E): EncodedReturnType<E>`
+#### `deriveSharedSecret<E extends EncodingType = "bytes">(privateKey: Uint8Array | string, publicKey: Uint8Array | string, encoding?: E): EncodedReturnType<E>`
 
 Derives a shared secret from a private key and a public key.
 
 - **Parameters:**
   - `privateKey`: The private key (base64 string or Uint8Array).
   - `publicKey`: The public key (base64 string or Uint8Array).
-  - `encoding`: Optional. The encoding type for the result. Default: "base64".
+  - `encoding`: Optional. The encoding type for the result. Default: "bytes".
 - **Returns:** The shared secret in the specified encoding.
 
 #### `eciesEncrypt(publicKey: string | Uint8Array, data: Uint8Array, format?: "base64" | "raw"): string | EciesCipher`
@@ -215,13 +215,13 @@ Encrypts data using RSA-OAEP.
   - `returnFormat`: Optional. The format of the result ("base64" or "bytes"). Default: "base64".
 - **Returns:** A promise resolving to the encrypted data in the specified format.
 
-#### `rsaDecrypt(privateKey: Uint8Array, cipherTextWithNonce: Uint8Array): Promise<Uint8Array>`
+#### `rsaDecrypt(privateKey: Uint8Array, cipherText: Uint8Array): Promise<Uint8Array>`
 
 Decrypts data using RSA-OAEP.
 
 - **Parameters:**
   - `privateKey`: The private key as a Uint8Array.
-  - `cipherTextWithNonce`: The encrypted data with nonce.
+  - `cipherText`: The encrypted data.
 - **Returns:** A promise resolving to the decrypted data as a Uint8Array.
 
 #### `rsaEncryptEnvelope(publicKey: Uint8Array, message: Uint8Array): Promise<string>`
@@ -244,7 +244,7 @@ Decrypts an envelope-encrypted message.
 
 ### HKDF Module
 
-#### `deriveHKDFKey<E extends EncodingType = "bytes">(keyMaterial: string, salt: Uint8Array, info: Uint8Array, encoding?: E): EncodedReturnType<E>`
+#### `deriveHKDFKey<E extends EncodingType = "bytes">(keyMaterial: Uint8Array, salt: Uint8Array, info: Uint8Array, encoding?: E): EncodedReturnType<E>`
 
 Derives a key using HKDF.
 
@@ -261,13 +261,13 @@ Derives a key using HKDF.
 
 Converts a base64 string to a Uint8Array.
 
-#### `bytesToBase64(bytes: Uint8Array, urlSafe = true): string`
+#### `bytesToBase64(bytes: Uint8Array, urlSafe = false): string`
 
 Converts a Uint8Array to a base64 string.
 
 - **Parameters:**
   - `bytes`: The bytes to convert.
-  - `urlSafe`: Optional. Whether to use URL-safe base64 encoding. Default: true.
+  - `urlSafe`: Optional. Whether to use URL-safe base64 encoding. Default: false.
 - **Returns:** The base64 encoded string.
 
 #### `encodeData<E extends EncodingType>(data: Uint8Array, encoding: E): EncodedReturnType<E>`
@@ -344,4 +344,4 @@ This library supports all modern browsers that implement the Web Crypto API and 
 
 ## License
 
-ISC
+GNU GPL
