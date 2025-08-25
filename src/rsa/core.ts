@@ -19,45 +19,34 @@ export const rsaEncrypt = async <E extends "base64" | "bytes" = "base64">(
 ): Promise<E extends "base64" ? string : Uint8Array> => {
   const key = await toRSAKey(publicKey, "spki");
 
-  const nonce = randomBytes(DEFAULT_NONCE_LENGTH);
-
   const ciphertext = await webcrypto.subtle.encrypt(
     {
       name: "RSA-OAEP",
-      iv: nonce,
     },
     key,
     message
   );
 
-  const cipherTextWithNonce = concatBytes(nonce, new Uint8Array(ciphertext));
-
   const actualReturnFormat = returnFormat || "base64";
 
   return encodeData(
-    cipherTextWithNonce,
+    new Uint8Array(ciphertext),
     actualReturnFormat
   ) as E extends "base64" ? string : Uint8Array;
 };
 
 export const rsaDecrypt = async (
   privateKey: Uint8Array,
-  cipherTextWithNonce: Uint8Array
+  cipherText: Uint8Array
 ) => {
   const key = await toRSAKey(privateKey, "pkcs8");
-  const nonceBytes = cipherTextWithNonce.slice(0, DEFAULT_NONCE_LENGTH);
-  const cipherBytes = cipherTextWithNonce.slice(
-    DEFAULT_NONCE_LENGTH,
-    cipherTextWithNonce.length
-  );
 
   const decrypted = await webcrypto.subtle.decrypt(
     {
       name: "RSA-OAEP",
-      iv: nonceBytes,
     },
     key,
-    cipherBytes
+    cipherText
   );
 
   return new Uint8Array(decrypted);
