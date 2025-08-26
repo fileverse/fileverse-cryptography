@@ -1,6 +1,6 @@
-# Fileverse Crypto
+# Fileverse Cryptography
 
-Fileverse is a privacy-first and decentralized workspace with note-taking, collaboration and spreadsheet apps. This repo contains a comprehensive, type-safe cryptographic library for the end-to-end encrypted Fileverse applications, including [dsheets.new](https://sheets.fileverse.io) and [ddocs.new](https://docs.fileverse.io). The library provides a set of easy-to-use cryptographic primitives with a focus on security, type safety, and flexibility, which can be used for any JavaScript/TypeScript applications.
+Fileverse is a privacy-first and decentralized workspace, with collaborative apps for note-taking, spreadsheets, file-sharing, and presentation slides. This repo contains a comprehensive, type-safe cryptographic library for the end-to-end encrypted Fileverse applications, including [dsheets.new](https://sheets.fileverse.io) and [ddocs.new](https://docs.fileverse.io). The library provides a set of easy-to-use cryptographic primitives with a focus on security, type safety, and flexibility, which can be used for any JavaScript/TypeScript applications.
 
 ## Features
 
@@ -306,7 +306,7 @@ This library leverages the following dependencies for cryptographic operations:
 
 ```bash
 # Clone the repository
-git clone https://github.com/fileverse/crypto.git
+git clone https://github.com/fileverse/fileverse-cryptography.git
 cd crypto
 
 # Install dependencies
