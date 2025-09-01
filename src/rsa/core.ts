@@ -1,8 +1,6 @@
-import { randomBytes, webcrypto } from "crypto";
+import { webcrypto } from "crypto";
 import { toRSAKey } from "./keys";
-import { DEFAULT_NONCE_LENGTH } from "./config";
 import { encodeData, toBytes } from "../utils/encoding";
-import { concatBytes } from "@noble/ciphers/utils";
 import {
   aesDecrypt,
   aesEncrypt,
