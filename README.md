@@ -7,6 +7,7 @@ Fileverse is a privacy-first and decentralized workspace, with collaborative app
 - **ECIES** (Elliptic Curve Integrated Encryption Scheme) for asymmetric encryption
 - **RSA** encryption with envelope encryption support for large messages
 - **HKDF** (HMAC-based Key Derivation Function) for secure key derivation
+- **Argon2id** password hashing for secure password storage and key derivation
 - **Encoding Utilities** for consistent data format handling
 - **Type-Safe API** with TypeScript generics for encoding types
 - **Cross-platform** compatible with Node.js and modern browsers
@@ -134,6 +135,39 @@ const key = deriveHKDFKey(keyMaterial, salt, info);
 const keyBase64 = deriveHKDFKey(keyMaterial, salt, info, "base64");
 ```
 
+### Argon2id
+
+Argon2id password hashing for secure password storage and key derivation.
+
+```typescript
+import { getArgon2idHash } from "@fileverse/crypto/argon";
+
+// Hash a password with default options
+const password = "mySecurePassword123";
+const salt = crypto.getRandomValues(new Uint8Array(16)); // 16-byte salt
+
+// Get hash as Uint8Array (default)
+const hash = await getArgon2idHash(password, salt);
+
+// Or get hash as base64 string
+const hashBase64 = await getArgon2idHash(password, salt, "base64");
+
+// Use custom Argon2 options
+const customOptions = {
+  t: 3, // time cost (iterations)
+  m: 65536, // memory cost in KiB
+  p: 4, // parallelism
+  dkLen: 32, // derived key length in bytes
+};
+
+const customHash = await getArgon2idHash(
+  password,
+  salt,
+  "base64",
+  customOptions
+);
+```
+
 ### Encoding Utilities
 
 Utilities for handling encoding conversions consistently.
@@ -254,6 +288,26 @@ Derives a key using HKDF.
   - `info`: The context info.
   - `encoding`: Optional. The encoding type for the result. Default: "bytes".
 - **Returns:** The derived key in the specified encoding.
+
+### Argon2id Module
+
+#### `getArgon2idHash<E extends EncodingType = "bytes">(password: string, salt: Uint8Array, returnFormat?: E, opts?: ArgonOpts): Promise<EncodedReturnType<E>>`
+
+Generates an Argon2id hash from a password and salt.
+
+- **Parameters:**
+  - `password`: The password to hash.
+  - `salt`: The salt as a Uint8Array (recommended: 16 bytes minimum).
+  - `returnFormat`: Optional. The encoding type for the result ("base64" or "bytes"). Default: "bytes".
+  - `opts`: Optional. Argon2 configuration options. Default uses secure defaults.
+- **Returns:** A promise resolving to the hash in the specified encoding.
+
+**Default Argon2 Options:**
+
+- `t`: 2 (time cost/iterations)
+- `m`: 102400 (memory cost in KiB, ~100MB)
+- `p`: 8 (parallelism)
+- `dkLen`: 32 (derived key length in bytes)
 
 ### Encoding Utilities
 
