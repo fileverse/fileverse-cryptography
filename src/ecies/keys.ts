@@ -32,3 +32,10 @@ export const deriveSharedSecret = <E extends EncodingType = "bytes">(
 
   return encodeData(sharedSecret, encoding || ("bytes" as E));
 };
+
+export const getPublicKey = <E extends EncodingType = "bytes">(
+  privateKey: Uint8Array,
+  encoding?: E
+): EncodedReturnType<E> => {
+  return encodeData(CURVE.getPublicKey(privateKey), encoding || ("bytes" as E));
+};

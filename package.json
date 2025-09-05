@@ -1,6 +1,6 @@
 {
   "name": "@fileverse/crypto",
-  "version": "0.0.13",
+  "version": "0.0.14",
   "description": "Crypto functions and helpers",
   "type": "module",
   "exports": {
@@ -18,6 +18,10 @@
       "types": "./dist/kdf/index.d.ts",
       "import": "./dist/kdf/index.js",
       "require": "./dist/kdf/index.cjs"
+    },
+    "./argon": {
+      "import": "./dist/argon/index.js",
+      "require": "./dist/argon/index.cjs"
     },
     "./utils": {
       "types": "./dist/utils/index.d.ts",

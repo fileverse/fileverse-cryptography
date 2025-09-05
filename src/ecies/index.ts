@@ -1,4 +1,4 @@
-export { generateECKeyPair, deriveSharedSecret } from "./keys";
+export { generateECKeyPair, deriveSharedSecret, getPublicKey } from "./keys";
 export { eciesEncrypt, eciesDecrypt, parseEciesCipherString } from "./core";
 export type {
   EciesCipher,

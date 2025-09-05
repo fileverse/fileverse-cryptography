@@ -14,6 +14,7 @@ export default defineConfig({
         "rsa/index": resolve(__dirname, "src/rsa/index.ts"),
         "kdf/index": resolve(__dirname, "src/kdf/index.ts"),
         "utils/index": resolve(__dirname, "src/utils/index.ts"),
+        "argon/index": resolve(__dirname, "src/argon/index.ts"),
       },
       name: "@fileverse/crypto",
       formats: ["es", "cjs"],
