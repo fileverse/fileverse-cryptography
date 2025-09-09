@@ -11,7 +11,7 @@ export default defineConfig({
     lib: {
       entry: {
         "ecies/index": resolve(__dirname, "src/ecies/index.ts"),
-        "rsa/index": resolve(__dirname, "src/rsa/index.ts"),
+        "webcrypto/index": resolve(__dirname, "src/webcrypto/index.ts"),
         "kdf/index": resolve(__dirname, "src/kdf/index.ts"),
         "utils/index": resolve(__dirname, "src/utils/index.ts"),
         "argon/index": resolve(__dirname, "src/argon/index.ts"),
@@ -47,6 +47,9 @@ export default defineConfig({
         "fs",
         "os",
         "util",
+        "buffer",
+        "process",
+        "@peculiar/webcrypto",
         "@noble/ciphers",
         "@noble/curves",
         "@noble/hashes",

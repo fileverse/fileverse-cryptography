@@ -84,9 +84,9 @@ import {
   generateRSAKeyPair,
   rsaEncrypt,
   rsaDecrypt,
-  rsaEncryptEnvelope,
-  rsaDecryptEnvelope,
-} from "@fileverse/crypto/rsa";
+  encryptEnvelope,
+  decryptEnvelope,
+} from "@fileverse/crypto/webcrypto";
 import { toBytes } from "@fileverse/crypto/utils";
 
 // Generate an RSA key pair (default 4096 bits)
@@ -107,13 +107,10 @@ console.log(new TextDecoder().decode(decrypted)); // "Hello, RSA encryption!"
 
 // For larger messages, use envelope encryption (hybrid RSA/AES)
 const largeMessage = new Uint8Array(1024 * 500); // 500KB message
-const envelope = await rsaEncryptEnvelope(keyPairBytes.publicKey, largeMessage);
+const envelope = await encryptEnvelope(keyPairBytes.publicKey, largeMessage);
 
 // Decrypt envelope
-const decryptedLarge = await rsaDecryptEnvelope(
-  keyPairBytes.privateKey,
-  envelope
-);
+const decryptedLarge = await decryptEnvelope(keyPairBytes.privateKey, envelope);
 ```
 
 ### HKDF
@@ -258,7 +255,7 @@ Decrypts data using RSA-OAEP.
   - `cipherText`: The encrypted data.
 - **Returns:** A promise resolving to the decrypted data as a Uint8Array.
 
-#### `rsaEncryptEnvelope(publicKey: Uint8Array, message: Uint8Array): Promise<string>`
+#### `encryptEnvelope(publicKey: Uint8Array, message: Uint8Array): Promise<string>`
 
 Encrypts a message of any size using envelope encryption (hybrid RSA/AES).
 
@@ -267,7 +264,7 @@ Encrypts a message of any size using envelope encryption (hybrid RSA/AES).
   - `message`: The data to encrypt.
 - **Returns:** A promise resolving to the enveloped ciphertext as a string.
 
-#### `rsaDecryptEnvelope(privateKey: Uint8Array, envelopedCipher: string): Promise<Uint8Array>`
+#### `decryptEnvelope(privateKey: Uint8Array, envelopedCipher: string): Promise<Uint8Array>`
 
 Decrypts an envelope-encrypted message.
 
