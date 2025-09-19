@@ -1,6 +1,6 @@
 {
   "name": "@fileverse/crypto",
-  "version": "0.0.15",
+  "version": "0.0.16",
   "description": "Crypto functions and helpers",
   "type": "module",
   "exports": {
@@ -22,6 +22,11 @@
     "./argon": {
       "import": "./dist/argon/index.js",
       "require": "./dist/argon/index.cjs"
+    },
+    "./nacl": {
+      "types": "./dist/nacl/index.d.ts",
+      "import": "./dist/nacl/index.js",
+      "require": "./dist/nacl/index.cjs"
     },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
@@ -76,6 +81,7 @@
     "@noble/curves": "^1.9.0",
     "@noble/hashes": "^1.8.0",
     "@peculiar/webcrypto": "^1.5.0",
-    "js-base64": "^3.7.7"
+    "js-base64": "^3.7.7",
+    "tweetnacl": "^1.0.3"
   }
 }

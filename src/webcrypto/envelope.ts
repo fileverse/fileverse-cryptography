@@ -1,4 +1,4 @@
-import { SEPERATOR } from "../constants";
+import { SEPARATOR } from "../constants";
 import { toBytes } from "../utils/encoding";
 import { aesDecrypt, aesEncrypt, rsaDecrypt, rsaEncrypt } from "./core";
 import { exportAESKey, generateAESKey, toAESKey } from "./keys";
@@ -12,14 +12,14 @@ export const encryptEnvelope = async (
   const aesKeyBytes = await exportAESKey(aesKey);
   const encryptedAesKey = await rsaEncrypt(publicKey, aesKeyBytes, "base64");
 
-  return encryptedAesKey + SEPERATOR + encryptedMessage;
+  return encryptedAesKey + SEPARATOR + encryptedMessage;
 };
 
 export const decryptEnvelope = async (
   privateKey: Uint8Array,
   envelopedCipher: string
 ): Promise<Uint8Array> => {
-  const [encryptedAesKey, encryptedMessage] = envelopedCipher.split(SEPERATOR);
+  const [encryptedAesKey, encryptedMessage] = envelopedCipher.split(SEPARATOR);
 
   if (!encryptedMessage || !encryptedAesKey) {
     throw new Error("Invalid encrypted message");

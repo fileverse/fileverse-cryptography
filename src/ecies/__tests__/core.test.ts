@@ -1,7 +1,7 @@
 import { describe, it, expect } from "vitest";
 import { eciesEncrypt, eciesDecrypt, parseEciesCipherString } from "../core";
 import { generateECKeyPair } from "../keys";
-import { SEPERATOR } from "../../constants";
+import { SEPARATOR } from "../../constants";
 import { toBytes, bytesToBase64 } from "../../utils";
 import { EciesCipher } from "..";
 
@@ -35,7 +35,7 @@ describe("ECIES Core Functionality", () => {
 
       expect(typeof encrypted).toBe("string");
 
-      expect(encrypted.split(SEPERATOR).length).toBe(4);
+      expect(encrypted.split(SEPARATOR).length).toBe(4);
     });
 
     it('should encrypt a message and return a concatenated string when format is "base64"', () => {
@@ -46,7 +46,7 @@ describe("ECIES Core Functionality", () => {
 
       expect(typeof encrypted).toBe("string");
 
-      expect(encrypted.split(SEPERATOR).length).toBe(4);
+      expect(encrypted.split(SEPARATOR).length).toBe(4);
     });
 
     it("should produce different ciphertexts for the same plaintext", () => {
@@ -81,13 +81,13 @@ describe("ECIES Core Functionality", () => {
     });
 
     it("should throw an error when parsing an invalid concatenated string (missing parts)", () => {
-      const missingParts = `part1${SEPERATOR}part2`;
+      const missingParts = `part1${SEPARATOR}part2`;
 
       expect(() => parseEciesCipherString(missingParts)).toThrow();
     });
 
     it("should throw an error when parsing an invalid concatenated string (empty parts)", () => {
-      const emptyParts = `part1${SEPERATOR}${SEPERATOR}part3${SEPERATOR}part4`;
+      const emptyParts = `part1${SEPARATOR}${SEPARATOR}part3${SEPARATOR}part4`;
 
       expect(() => parseEciesCipherString(emptyParts)).toThrow();
     });

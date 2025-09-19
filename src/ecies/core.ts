@@ -3,7 +3,7 @@ import { NONCE_LEN, INFO, CURVE } from "./config";
 import { toBytes, bytesToBase64, generateRandomBytes } from "../utils";
 import { EciesCipher } from ".";
 import { deriveSharedSecret } from "./keys";
-import { SEPERATOR } from "../constants";
+import { SEPARATOR } from "../constants";
 import { CipherTextFormat } from "./types";
 import { deriveHKDFKey } from "../kdf";
 
@@ -43,18 +43,18 @@ export const eciesEncrypt = <T extends CipherTextFormat = "base64">(
   }
 
   return (ephemeralPublicKey +
-    SEPERATOR +
+    SEPARATOR +
     nonceBase64 +
-    SEPERATOR +
+    SEPARATOR +
     ciphertextBase64 +
-    SEPERATOR +
+    SEPARATOR +
     macBase64) as T extends "raw" ? EciesCipher : string;
 };
 
 export const parseEciesCipherString = (
   concatenatedData: string
 ): EciesCipher => {
-  const parts = concatenatedData.split(SEPERATOR);
+  const parts = concatenatedData.split(SEPARATOR);
   if (parts.length !== 4) {
     throw new Error("Invalid encrypted data format");
   }

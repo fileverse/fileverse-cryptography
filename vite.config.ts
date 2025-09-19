@@ -15,6 +15,7 @@ export default defineConfig({
         "kdf/index": resolve(__dirname, "src/kdf/index.ts"),
         "utils/index": resolve(__dirname, "src/utils/index.ts"),
         "argon/index": resolve(__dirname, "src/argon/index.ts"),
+        "nacl/index": resolve(__dirname, "src/nacl/index.ts"),
       },
       name: "@fileverse/crypto",
       formats: ["es", "cjs"],

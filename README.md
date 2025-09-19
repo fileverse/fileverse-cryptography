@@ -6,6 +6,7 @@ Fileverse is a privacy-first and decentralized workspace, with collaborative app
 
 - **ECIES** (Elliptic Curve Integrated Encryption Scheme) for asymmetric encryption
 - **RSA** encryption with envelope encryption support for large messages
+- **NaCl Secret Box** for fast, secure symmetric encryption using TweetNaCl
 - **HKDF** (HMAC-based Key Derivation Function) for secure key derivation
 - **Argon2id** password hashing for secure password storage and key derivation
 - **Encoding Utilities** for consistent data format handling
@@ -74,6 +75,40 @@ const bobSharedSecret = deriveSharedSecret(
 
 // aliceSharedSecret === bobSharedSecret
 ```
+
+### NaCl Secret Box
+
+Fast, secure symmetric encryption using TweetNaCl's secretbox implementation. Perfect for encrypting data when you have a shared secret key.
+
+```typescript
+import {
+  generateSecretBoxKey,
+  secretBoxEncrypt,
+  secretBoxDecrypt,
+} from "@fileverse/crypto/nacl";
+
+// Generate a secret key (32 bytes)
+const secretKey = generateSecretBoxKey();
+
+// Encrypt a message
+const message = new TextEncoder().encode("Secret message");
+const encrypted = secretBoxEncrypt(secretKey, message);
+
+// Decrypt the message
+const decrypted = secretBoxDecrypt(secretKey, encrypted);
+console.log(new TextDecoder().decode(decrypted)); // "Secret message"
+
+// URL-safe base64 encoding
+const encryptedUrlSafe = secretBoxEncrypt(secretKey, message, true);
+```
+
+#### Key Features
+
+- **Authenticated encryption**: Built-in authentication prevents tampering
+- **Fast performance**: Optimized for speed using TweetNaCl
+- **Secure nonces**: Automatically generates cryptographically secure 24-byte nonces
+- **URL-safe encoding**: Optional URL-safe base64 encoding for web applications
+- **Type safety**: Full TypeScript support with proper error handling
 
 ### RSA
 
@@ -225,6 +260,39 @@ Decrypts data using ECIES.
   - `encryptedData`: The encrypted data (string or EciesCipher object).
 - **Returns:** The decrypted data as a Uint8Array.
 
+### NaCl Secret Box Module
+
+#### `generateSecretBoxKey(): Uint8Array`
+
+Generates a cryptographically secure 32-byte secret key for use with secret box encryption.
+
+- **Returns:** A 32-byte Uint8Array suitable for secret box operations.
+
+#### `secretBoxEncrypt(key: Uint8Array, message: Uint8Array, urlSafe?: boolean): string`
+
+Encrypts data using NaCl's secretbox authenticated encryption.
+
+- **Parameters:**
+  - `key`: The 32-byte secret key as a Uint8Array.
+  - `message`: The data to encrypt as a Uint8Array.
+  - `urlSafe`: Optional. Whether to use URL-safe base64 encoding. Default: false.
+- **Returns:** The encrypted data as a base64-encoded string containing nonce and ciphertext.
+- **Throws:** Error if the key length is invalid (not 32 bytes).
+
+#### `secretBoxDecrypt(key: Uint8Array, encrypted: string): Uint8Array`
+
+Decrypts data that was encrypted with secretBoxEncrypt.
+
+- **Parameters:**
+  - `key`: The 32-byte secret key as a Uint8Array.
+  - `encrypted`: The encrypted data string returned by secretBoxEncrypt.
+- **Returns:** The decrypted data as a Uint8Array.
+- **Throws:**
+  - Error if the key length is invalid (not 32 bytes).
+  - Error if the encrypted message format is invalid.
+  - Error if the nonce length is invalid (not 24 bytes).
+  - Error if decryption fails (authentication failure or corrupted data).
+
 ### RSA Module
 
 #### `generateRSAKeyPair<E extends EncodingType = "base64">(keySize?: number, encoding?: E): Promise<RsaKeyPairType<E>>`
@@ -337,6 +405,7 @@ This library leverages the following dependencies for cryptographic operations:
 - [@noble/curves](https://github.com/paulmillr/noble-curves) - For elliptic curve cryptography
 - [@noble/hashes](https://github.com/paulmillr/noble-hashes) - For cryptographic hash functions
 - [@noble/ciphers](https://github.com/paulmillr/noble-ciphers) - For symmetric encryption
+- [tweetnacl](https://github.com/dchest/tweetnacl-js) - For NaCl secret box authenticated encryption
 - [js-base64](https://github.com/dankogai/js-base64) - For base64 encoding/decoding
 
 ## Security Considerations
