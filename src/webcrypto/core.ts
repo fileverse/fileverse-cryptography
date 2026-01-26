@@ -2,7 +2,7 @@ import { randomBytes, webcrypto } from "./crypto-setup";
 import { toRSAKey } from "./keys";
 import { encodeData } from "../utils/encoding";
 import { DEFAULT_NONCE_LENGTH } from "./config";
-import { concatBytes } from "@noble/hashes/utils";
+import { concatBytes } from "@noble/hashes/utils.js";
 
 export const rsaEncrypt = async <E extends "base64" | "bytes" = "base64">(
   publicKey: Uint8Array,

@@ -1,4 +1,4 @@
-import { randomBytes } from "@noble/hashes/utils";
+import { randomBytes } from "@noble/hashes/utils.js";
 import { EncodedReturnType, EncodingType } from "../types";
 import { encodeData } from "./encoding";
 

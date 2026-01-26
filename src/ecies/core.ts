@@ -1,4 +1,4 @@
-import { gcm } from "@noble/ciphers/aes";
+import { gcm } from "@noble/ciphers/aes.js";
 import { NONCE_LEN, INFO, CURVE } from "./config";
 import { toBytes, bytesToBase64, generateRandomBytes } from "../utils";
 import { EciesCipher } from ".";
@@ -12,7 +12,7 @@ export const eciesEncrypt = <T extends CipherTextFormat = "base64">(
   message: Uint8Array,
   returnFormat?: T
 ): T extends "raw" ? EciesCipher : string => {
-  const ephemeralPrivateKey = CURVE.utils.randomPrivateKey();
+  const ephemeralPrivateKey = CURVE.utils.randomSecretKey();
   const ephemeralPublicKeyBytes = CURVE.getPublicKey(ephemeralPrivateKey);
 
   const sharedSecret = deriveSharedSecret(ephemeralPrivateKey, publicKey);

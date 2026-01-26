@@ -4,9 +4,10 @@ import type { EncodingType, EncodedReturnType } from "../types";
 import type { EciesKeyPairType } from "./types";
 
 export const generateECKeyPair = <E extends EncodingType = "bytes">(
+  seed?: Uint8Array,
   encoding?: E
 ): EciesKeyPairType<E> => {
-  const privateKey = CURVE.utils.randomPrivateKey();
+  const privateKey = CURVE.utils.randomSecretKey(seed);
   const publicKey = CURVE.getPublicKey(privateKey);
 
   const actualEncoding = encoding || ("bytes" as E);

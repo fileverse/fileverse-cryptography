@@ -1,4 +1,4 @@
-import { argon2idAsync, ArgonOpts } from "@noble/hashes/argon2";
+import { argon2idAsync, ArgonOpts } from "@noble/hashes/argon2.js";
 import { EncodedReturnType, EncodingType } from "../types";
 import { encodeData } from "../utils/encoding";
 import { DEFAULT_ARGON_OPTS } from "./config";

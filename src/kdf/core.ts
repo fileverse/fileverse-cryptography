@@ -1,11 +1,11 @@
 import { EncodedReturnType, EncodingType } from "../types";
-import { hkdf } from "@noble/hashes/hkdf";
+import { hkdf } from "@noble/hashes/hkdf.js";
 import { DEFAULT_KEY_LENGTH } from "../constants";
 import { encodeData } from "../utils/encoding";
-import { sha256 } from "@noble/hashes/sha2";
-import { pbkdf2, Pbkdf2Opt } from "@noble/hashes/pbkdf2";
-import { KDFInput } from "@noble/hashes/utils";
-import { cbc } from "@noble/ciphers/aes";
+import { sha256 } from "@noble/hashes/sha2.js";
+import { pbkdf2, Pbkdf2Opt } from "@noble/hashes/pbkdf2.js";
+import { KDFInput } from "@noble/hashes/utils.js";
+import { cbc } from "@noble/ciphers/aes.js";
 import { generateRandomBytes } from "../utils";
 import { AesCbcInputs } from "./types";
 

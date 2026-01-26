@@ -14,7 +14,7 @@ describe("ECIES Key Functions", () => {
     });
 
     it("should generate a key pair with base64 encoding when specified", () => {
-      const keyPair = generateECKeyPair("base64");
+      const keyPair = generateECKeyPair(undefined, "base64");
 
       expect(keyPair).toHaveProperty("publicKey");
       expect(keyPair).toHaveProperty("privateKey");
@@ -72,8 +72,8 @@ describe("ECIES Key Functions", () => {
 
     it("should accept both string and Uint8Array inputs", () => {
       // Generate base64 keys for string testing
-      const keyPair1 = generateECKeyPair("base64");
-      const keyPair2 = generateECKeyPair("base64");
+      const keyPair1 = generateECKeyPair(undefined, "base64");
+      const keyPair2 = generateECKeyPair(undefined, "base64");
 
       // Generate bytes keys for Uint8Array testing
       const keyPair3 = generateECKeyPair();
