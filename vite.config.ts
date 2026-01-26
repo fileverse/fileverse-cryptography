@@ -1,5 +1,5 @@
 import { resolve } from "path";
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 import dts from "vite-plugin-dts";
 
 // Check if we're in production mode
@@ -7,6 +7,9 @@ const isProd = process.env.NODE_ENV === "production";
 
 // https://vitejs.dev/guide/build.html#library-mode
 export default defineConfig({
+  test: {
+    setupFiles: ["./vitest.setup.ts"],
+  },
   build: {
     lib: {
       entry: {
