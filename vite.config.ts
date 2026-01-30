@@ -13,6 +13,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: {
+        index: resolve(__dirname, "src/index.ts"),
         "ecies/index": resolve(__dirname, "src/ecies/index.ts"),
         "webcrypto/index": resolve(__dirname, "src/webcrypto/index.ts"),
         "kdf/index": resolve(__dirname, "src/kdf/index.ts"),
