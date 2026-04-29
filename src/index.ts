@@ -1,6 +1,7 @@
 export * from "./argon";
 export * from "./constants";
 export * from "./ecies";
+export * from "./ens";
 export * from "./kdf";
 export * from "./nacl";
 export * from "./utils";

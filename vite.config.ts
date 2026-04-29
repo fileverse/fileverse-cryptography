@@ -59,9 +59,11 @@ export default defineConfig({
         "@noble/curves",
         "@noble/hashes",
         "js-base64",
+        "viem",
         /^@noble\/ciphers\/.*/,
         /^@noble\/curves\/.*/,
         /^@noble\/hashes\/.*/,
+        /^viem\/.*/,
       ],
       output: [
         {
