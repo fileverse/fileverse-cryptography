@@ -1,7 +1,9 @@
 import { SEPARATOR } from "../constants";
 import { bytesToBase64, generateRandomBytes, toBytes } from "../utils";
 import { SECRET_BOX_KEY_LEN, SECRET_BOX_NONCE_LEN } from "./config";
-import { secretbox } from "tweetnacl";
+import nacl from "tweetnacl";
+
+const { secretbox } = nacl;
 
 export const secretBoxEncrypt = (
   key: Uint8Array,

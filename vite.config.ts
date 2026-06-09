@@ -28,37 +28,30 @@ export default defineConfig({
     minify: isProd ? "terser" : false,
     terserOptions: isProd
       ? {
-          compress: {
-            drop_console: true,
-            drop_debugger: true,
-            pure_funcs: ["console.log", "console.info", "console.debug"],
-            passes: 2,
-          },
-          mangle: {
-            properties: false,
-          },
-          format: {
-            comments: false,
-          },
-        }
+        compress: {
+          drop_console: true,
+          drop_debugger: true,
+          pure_funcs: ["console.log", "console.info", "console.debug"],
+          passes: 2,
+        },
+        mangle: {
+          properties: false,
+        },
+        format: {
+          comments: false,
+        },
+      }
       : undefined,
     sourcemap: !isProd,
     outDir: "dist",
     chunkSizeWarningLimit: 100,
     rollupOptions: {
       external: [
-        "crypto",
-        "path",
-        "fs",
-        "os",
-        "util",
-        "buffer",
-        "process",
-        "@peculiar/webcrypto",
         "@noble/ciphers",
         "@noble/curves",
         "@noble/hashes",
         "js-base64",
+        "tweetnacl",
         /^@noble\/ciphers\/.*/,
         /^@noble\/curves\/.*/,
         /^@noble\/hashes\/.*/,
