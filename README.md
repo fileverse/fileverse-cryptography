@@ -6,6 +6,8 @@ Fileverse is a privacy-first and decentralized workspace, with collaborative app
 
 - **ECIES** (Elliptic Curve Integrated Encryption Scheme) for asymmetric encryption
 - **RSA** encryption with envelope encryption support for large messages
+- **Post-Quantum Encryption** with HPKE (RFC 9180) over the X-Wing hybrid KEM (ML-KEM-768 + X25519)
+- **Identity PQ Primitives** for post-quantum identity public keys and deterministic PQ seed derivation
 - **NaCl Secret Box** for fast, secure symmetric encryption using TweetNaCl
 - **HKDF** (HMAC-based Key Derivation Function) for secure key derivation
 - **Argon2id** password hashing for secure password storage and key derivation
@@ -74,6 +76,83 @@ const bobSharedSecret = deriveSharedSecret(
 );
 
 // aliceSharedSecret === bobSharedSecret
+```
+
+### Post-Quantum Encryption (X-Wing)
+
+Hybrid post-quantum public-key encryption: HPKE (RFC 9180) with the X-Wing KEM (ML-KEM-768 + X25519), HKDF-SHA256 and AES-256-GCM. A ciphertext stays confidential as long as either ML-KEM-768 or X25519 holds.
+
+```typescript
+import {
+  generatePqKeyPair,
+  getPublicKey,
+  pqEncrypt,
+  pqDecrypt,
+} from "@fileverse/crypto/pq";
+
+// Generate a key pair (the private key is a 32-byte seed)
+const keyPair = await generatePqKeyPair();
+// { publicKey: Uint8Array (1216 bytes), privateKey: Uint8Array (32 bytes) }
+
+// Or derive one deterministically from a 32-byte seed, base64 encoded
+const seed = crypto.getRandomValues(new Uint8Array(32));
+const seededKeyPair = await generatePqKeyPair(seed, "base64");
+
+// Recompute the public key from a private key
+const publicKey = await getPublicKey(keyPair.privateKey);
+
+// Encrypt a message
+const message = new TextEncoder().encode("Secret message");
+const encrypted = await pqEncrypt(keyPair.publicKey, message);
+// "FVPQ1__n__<encapsulated key>__n__<ciphertext>"
+
+// Decrypt a message
+const decrypted = await pqDecrypt(keyPair.privateKey, encrypted);
+console.log(new TextDecoder().decode(decrypted)); // "Secret message"
+
+// You can also use the raw format for the encrypted data
+const encryptedRaw = await pqEncrypt(keyPair.publicKey, message, "raw");
+// { version: "FVPQ1", enc: string, ciphertext: string }
+```
+
+#### Key Features
+
+- **Hybrid security**: X-Wing combines ML-KEM-768 with X25519
+- **Fresh encapsulation per message**: no nonce on the wire; HPKE derives it from the KEM shared secret
+- **Tamper-evident version tag**: `FVPQ1` is bound as AEAD associated data, so a modified tag fails decryption
+- **Strict parsing**: only canonical (standard alphabet, padded) base64 parts are accepted, and malformed input is rejected before any KEM work
+- **Size**: each ciphertext carries a 1120-byte encapsulated key plus a 16-byte authentication tag
+
+### Identity PQ Primitives
+
+Pure functions for moving an identity's public key onto X-Wing and deriving deterministic PQ seeds. Byte formats and frozen invariants are documented in [docs/architecture/identity-pq.md](docs/architecture/identity-pq.md).
+
+```typescript
+import {
+  deriveIdentityPqKeyPair,
+  derivePortalPqSeed,
+  encodeIdentityPublicKey,
+  decodeIdentityPublicKey,
+  matchesOnchainIdentityKey,
+} from "@fileverse/crypto/identity";
+import { generatePqKeyPair } from "@fileverse/crypto/pq";
+
+// Identity key pair from the account's base64 argon2id hash and salt
+const identity = await deriveIdentityPqKeyPair(ag2Hash, salt);
+
+// Onchain public key blob: "FVPQID1" tag + 1216-byte X-Wing public key (1223 bytes)
+const blob = encodeIdentityPublicKey(identity.publicKey);
+
+// Decode either format
+const decoded = decodeIdentityPublicKey(blob);
+// { format: "pq", publicKey: Uint8Array } or { format: "rsa", spki: Uint8Array }
+
+// Login-time drift guard: false means stop and decrypt nothing
+const matches = matchesOnchainIdentityKey(identity.publicKey, blob);
+
+// Portal key pair from the portal's base64 owner secret and its address
+const portalSeed = derivePortalPqSeed(ownerSecretBase64, portalAddress);
+const portalKeyPair = await generatePqKeyPair(portalSeed);
 ```
 
 ### NaCl Secret Box
@@ -260,6 +339,103 @@ Decrypts data using ECIES.
   - `encryptedData`: The encrypted data (string or EciesCipher object).
 - **Returns:** The decrypted data as a Uint8Array.
 
+### PQ Module
+
+Import from `@fileverse/crypto/pq`. The root package also re-exports `generatePqKeyPair`, `pqEncrypt`, `pqDecrypt` and `parsePqCipherString`; `getPublicKey` at the root is the ECIES one.
+
+#### `generatePqKeyPair<E extends EncodingType = "bytes">(seed?: Uint8Array, encoding?: E): Promise<PqKeyPairType<E>>`
+
+Generates an X-Wing key pair. The private key is the 32-byte seed; the public key is 1216 bytes.
+
+- **Parameters:**
+  - `seed`: Optional. A 32-byte seed for deterministic generation. Random if omitted.
+  - `encoding`: Optional. The encoding type to use ("base64" or "bytes"). Default: "bytes".
+- **Returns:** A promise resolving to an object containing `publicKey` and `privateKey` in the specified encoding.
+- **Throws:** Error if the seed is not 32 bytes.
+
+#### `getPublicKey<E extends EncodingType = "bytes">(privateKey: Uint8Array, encoding?: E): Promise<EncodedReturnType<E>>`
+
+Recomputes the X-Wing public key from a 32-byte private key.
+
+- **Throws:** Error if the private key is not 32 bytes.
+
+#### `pqEncrypt<T extends CipherTextFormat = "base64">(publicKey: Uint8Array, message: Uint8Array, returnFormat?: T): Promise<T extends "raw" ? PqCipher : string>`
+
+Encrypts data with HPKE single-shot seal over X-Wing.
+
+- **Parameters:**
+  - `publicKey`: The 1216-byte X-Wing public key.
+  - `message`: The data to encrypt.
+  - `returnFormat`: Optional. "base64" returns `FVPQ1__n__<enc>__n__<ciphertext>`; "raw" returns a `PqCipher` object. Default: "base64".
+- **Returns:** A promise resolving to the encrypted data in the specified format.
+
+#### `pqDecrypt(privateKey: Uint8Array, encryptedData: PqCipher | string): Promise<Uint8Array>`
+
+Decrypts data produced by `pqEncrypt`.
+
+- **Parameters:**
+  - `privateKey`: The 32-byte private key.
+  - `encryptedData`: The encrypted string or `PqCipher` object.
+- **Returns:** A promise resolving to the decrypted data as a Uint8Array.
+- **Throws:** Error on a wrong key length, an unsupported version, malformed or non-canonical parts, or authentication failure.
+
+#### `parsePqCipherString(concatenatedData: string): PqCipher`
+
+Splits and validates a `pqEncrypt` string into its `version`, `enc` and `ciphertext` parts.
+
+#### Constants
+
+- `VERSION`: `"FVPQ1"`, the wire tag prefixed to every ciphertext.
+- `INFO`: the HPKE application context (`"FILEVERSE-PQ-HPKE-XWING-v1"`).
+- `SUITE`: `{ kem: "X-Wing", kdf: "HKDF-SHA256", aead: "AES-256-GCM" }`.
+
+### Identity Module
+
+Import from `@fileverse/crypto/identity`. All functions are pure: no storage, no network, no chain access.
+
+#### `encodeIdentityPublicKey(xwingPublicKey: Uint8Array): Uint8Array`
+
+Encodes an X-Wing public key as the 1223-byte identity blob (`"FVPQID1"` + 1216-byte key).
+
+- **Throws:** Error if the key is not 1216 bytes.
+
+#### `decodeIdentityPublicKey(bytes: Uint8Array): DecodedIdentityPublicKey`
+
+Decodes an identity public key blob of either generation.
+
+- **Returns:** `{ format: "pq", publicKey }` for a tagged 1223-byte blob, or `{ format: "rsa", spki }` for a legacy RSA SPKI DER blob.
+- **Throws:** Error on a tagged blob of the wrong length or an unknown format.
+
+#### `deriveIdentityPqSeed(ag2Hash: string, salt: Uint8Array): Uint8Array`
+
+Derives the 32-byte identity seed with HKDF-SHA256 (info `"PQ_IDENTITY_KEY"`). The input key material is the UTF-8 bytes of the base64 `ag2Hash` string, not the decoded hash, matching the existing `MASTER_KEY` / `SIGNING_KEY` / `AGENT_KEY` derivations.
+
+- **Parameters:**
+  - `ag2Hash`: Standard padded base64 of a 32-byte argon2id hash.
+  - `salt`: The identity salt. Must be non-empty.
+- **Throws:** Error if `ag2Hash` is not strict base64 of 32 bytes or `salt` is empty.
+
+#### `deriveIdentityPqKeyPair(ag2Hash: string, salt: Uint8Array): Promise<PqKeyPairBytes>`
+
+`deriveIdentityPqSeed` followed by `generatePqKeyPair(seed)`.
+
+#### `derivePortalPqSeed(ownerSecretBase64: string, portalAddress: string): Uint8Array`
+
+Derives a 32-byte portal seed with HKDF-SHA256: key material is the decoded owner secret, salt is the UTF-8 bytes of the lowercased portal address, info is `"PQ_PORTAL_KEY"`.
+
+- **Parameters:**
+  - `ownerSecretBase64`: Standard padded base64 of the portal's 64-byte ed25519 secret.
+  - `portalAddress`: A `0x`-prefixed 20-byte hex address, in any casing.
+- **Throws:** Error if either input is malformed.
+
+#### `matchesOnchainIdentityKey(derivedPublicKey: Uint8Array, onchainAccountPublicKey: Uint8Array): boolean`
+
+Constant-time check that a derived X-Wing public key matches the onchain blob. Returns `false` for legacy RSA blobs and malformed input. A `false` on a rotated account means derivation drift: callers must stop and decrypt nothing.
+
+#### Constants
+
+`IDENTITY_PQ_TAG`, `HKDF_INFO_IDENTITY_PQ`, `HKDF_INFO_PORTAL_PQ`, `XWING_PUBLIC_KEY_LEN`, `SEED_LEN`, `AG2_HASH_DECODED_LEN`, `OWNER_SECRET_DECODED_LEN`. These are frozen: changing any of them orphans existing keys.
+
 ### NaCl Secret Box Module
 
 #### `generateSecretBoxKey(): Uint8Array`
@@ -407,10 +583,14 @@ This library leverages the following dependencies for cryptographic operations:
 - [@noble/ciphers](https://github.com/paulmillr/noble-ciphers) - For symmetric encryption
 - [tweetnacl](https://github.com/dchest/tweetnacl-js) - For NaCl secret box authenticated encryption
 - [js-base64](https://github.com/dankogai/js-base64) - For base64 encoding/decoding
+- [@hpke/core](https://github.com/dajiaji/hpke-js) - For HPKE (RFC 9180)
+- [@hpke/hybridkem-x-wing](https://github.com/dajiaji/hpke-js) - For the X-Wing hybrid KEM
+- [mlkem](https://github.com/dajiaji/crystals-kyber-js) - For ML-KEM, used by X-Wing
 
 ## Security Considerations
 
 - This library uses well-established cryptographic primitives but has not undergone a formal security audit.
+- The PQ module pins `@hpke/hybridkem-x-wing` 0.7.0 (draft-connolly-cfrg-xwing-kem-06). Seeded key pairs depend on that version's key generation, so upgrade it only after the X-Wing known-answer tests pass.
 - Always keep private keys secure and never expose them in client-side code.
 - For production use cases with high-security requirements, consider a formal security review.
 - The library doesn't handle key storage - use appropriate secure storage mechanisms for your platform.
@@ -419,15 +599,15 @@ This library leverages the following dependencies for cryptographic operations:
 
 ### Prerequisites
 
-- Node.js (v14+)
+- Node.js (v18+)
 - npm or yarn
 
 ### Setup
 
 ```bash
 # Clone the repository
-git clone https://github.com/fileverse/fileverse-cryptography.git
-cd crypto
+git clone https://github.com/fileverse/fileverse-crypto.git
+cd fileverse-crypto
 
 # Install dependencies
 npm install
@@ -451,6 +631,9 @@ npm test
 
 # Run specific test files
 npx vitest run src/ecies/__tests__/core.test.ts
+
+# Recompute the pinned identity derivation vectors with independent HKDF implementations
+npm run capture:vectors
 ```
 
 ## Browser Compatibility
@@ -464,4 +647,4 @@ This library supports all modern browsers that implement the Web Crypto API and 
 
 ## License
 
-GNU GPL
+GNU AGPL v3 (see [LICENSE.md](LICENSE.md))

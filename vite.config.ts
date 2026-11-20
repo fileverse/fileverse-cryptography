@@ -20,6 +20,8 @@ export default defineConfig({
         "utils/index": resolve(__dirname, "src/utils/index.ts"),
         "argon/index": resolve(__dirname, "src/argon/index.ts"),
         "nacl/index": resolve(__dirname, "src/nacl/index.ts"),
+        "pq/index": resolve(__dirname, "src/pq/index.ts"),
+        "identity/index": resolve(__dirname, "src/identity/index.ts"),
       },
       name: "@fileverse/crypto",
       formats: ["es", "cjs"],
@@ -52,9 +54,12 @@ export default defineConfig({
         "@noble/hashes",
         "js-base64",
         "tweetnacl",
+        "@hpke/core",
+        "@hpke/hybridkem-x-wing",
         /^@noble\/ciphers\/.*/,
         /^@noble\/curves\/.*/,
         /^@noble\/hashes\/.*/,
+        /^@hpke\/.*/,
       ],
       output: [
         {
@@ -89,7 +94,12 @@ export default defineConfig({
     dts({
       outDir: "dist",
       include: ["src/**/*.ts"],
-      exclude: ["src/**/*.test.ts", "src/**/__tests__/**"],
+      exclude: [
+        "src/**/*.test.ts",
+        "src/**/__tests__/**",
+        "src/**/__benchmarks__/**",
+        "src/**/*.bench.ts",
+      ],
     }),
   ],
 });
