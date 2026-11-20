@@ -606,8 +606,8 @@ This library leverages the following dependencies for cryptographic operations:
 
 ```bash
 # Clone the repository
-git clone https://github.com/fileverse/fileverse-crypto.git
-cd fileverse-crypto
+git clone https://github.com/fileverse/fileverse-cryptography.git
+cd fileverse-cryptography
 
 # Install dependencies
 npm install
