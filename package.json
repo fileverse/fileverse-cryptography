@@ -1,6 +1,6 @@
 {
   "name": "@fileverse/crypto",
-  "version": "0.0.22",
+  "version": "0.0.24",
   "description": "Crypto functions and helpers",
   "type": "module",
   "exports": {
@@ -39,6 +39,16 @@
       "import": "./dist/nacl/index.js",
       "require": "./dist/nacl/index.cjs"
     },
+    "./pq": {
+      "types": "./dist/pq/index.d.ts",
+      "import": "./dist/pq/index.js",
+      "require": "./dist/pq/index.cjs"
+    },
+    "./identity": {
+      "types": "./dist/identity/index.d.ts",
+      "import": "./dist/identity/index.js",
+      "require": "./dist/identity/index.cjs"
+    },
     "./utils": {
       "types": "./dist/utils/index.d.ts",
       "import": "./dist/utils/index.js",
@@ -63,16 +73,18 @@
     "build:prod": "npm run clean && NODE_ENV=production vite build && find dist -name \"*.map\" -delete",
     "prepare": "npm run build:prod",
     "preview": "vite preview",
-    "test": "vitest"
+    "test": "vitest",
+    "capture:vectors": "node scripts/capture-vectors.mjs"
   },
   "files": [
     "dist"
   ],
   "engines": {
-    "node": ">=16.0.0"
+    "node": ">=18.0.0"
   },
   "author": "",
-  "license": "ISC",
+  "license": "AGPL-3.0-only",
+  "sideEffects": false,
   "keywords": [
     "cryptography",
     "encryption",
@@ -84,6 +96,7 @@
   "devDependencies": {
     "@types/node": "^22.15.3",
     "@vitest/ui": "^3.1.2",
+    "futoin-hkdf": "^1.5.3",
     "terser": "^5.28.1",
     "typescript": "^5.8.3",
     "vite": "^6.3.3",
@@ -91,10 +104,22 @@
     "vitest": "^3.1.2"
   },
   "dependencies": {
+    "@hpke/common": "1.10.1",
+    "@hpke/core": "1.9.0",
+    "@hpke/dhkem-x25519": "1.8.0",
+    "@hpke/hybridkem-x-wing": "0.7.0",
     "@noble/ciphers": "^2.1.1",
     "@noble/curves": "^2.0.1",
     "@noble/hashes": "^2.0.1",
     "js-base64": "^3.7.7",
+    "mlkem": "2.7.0",
     "tweetnacl": "^1.0.3"
+  },
+  "overrides": {
+    "@hpke/core": "1.9.0",
+    "@hpke/hybridkem-x-wing": "0.7.0",
+    "@hpke/common": "1.10.1",
+    "@hpke/dhkem-x25519": "1.8.0",
+    "mlkem": "2.7.0"
   }
 }
