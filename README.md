@@ -587,12 +587,21 @@ This library leverages the following dependencies for cryptographic operations:
 - [@hpke/hybridkem-x-wing](https://github.com/dajiaji/hpke-js) - For the X-Wing hybrid KEM
 - [mlkem](https://github.com/dajiaji/crystals-kyber-js) - For ML-KEM, used by X-Wing
 
+## Audits
+
+| Auditor | Report | Date | Scope | Findings |
+| --- | --- | --- | --- | --- |
+| Nethermind Security | [NM-1025](audits/NM-1025-fileverse-crypto-pqc.pdf) | October 8, 2026 | All modules in `src/`: `pq`, `identity`, `ecies`, `webcrypto`, `nacl`, `argon`, `kdf`, `utils` | None (0 critical, high, medium, low or informational) |
+
+- The review covered commit `37b549d` of the pre-release `@fileverse/crypto-pqc` package. The `src/` tree in v0.0.24 is identical to it apart from one comment naming the package.
+- In `src/kdf/core.ts` only `deriveHKDFKey` was in scope. The PBKDF2 and AES-CBC helpers there are deprecated and were not reviewed.
+- Nethermind rated both the documentation and the test suite High. The `pq` module has 100% test coverage and the `identity` module 100% line and 97% branch coverage.
+
 ## Security Considerations
 
-- This library uses well-established cryptographic primitives but has not undergone a formal security audit.
+- The library was reviewed by Nethermind Security with no findings (see [Audits](#audits)). Changes made after v0.0.24 are not covered by that review.
 - The PQ module pins `@hpke/hybridkem-x-wing` 0.7.0 (draft-connolly-cfrg-xwing-kem-06). Seeded key pairs depend on that version's key generation, so upgrade it only after the X-Wing known-answer tests pass.
 - Always keep private keys secure and never expose them in client-side code.
-- For production use cases with high-security requirements, consider a formal security review.
 - The library doesn't handle key storage - use appropriate secure storage mechanisms for your platform.
 
 ## Development
